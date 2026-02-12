@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+</head>
+<body>
+  <header>
+    <h1>EcoPonto Digital</h1>
+    <p>Mapa colaborativo de coleta seletiva na sua comunidade</p>
+  </header>
+
+  <main>
+    <section id="sobre">
+      <h2>Sobre o Projeto</h2>
+      <p>O EcoPonto Digital é uma iniciativa para ajudar moradores a encontrar locais de descarte correto de resíduos, como eletrônicos e óleo de cozinha, promovendo sustentabilidade e cidadania.</p>
+    </section>
+
+    <section id="mapa">
+      <h2>Mapa de Pontos de Coleta</h2>
+      <div id="map" style="height: 400px;"></div>
+    </section>
+
+    <section id="formulario">
+      <h2>Indique um novo ponto de coleta</h2>
+      <form id="suggestionForm">
+        <input type="text" id="nome" placeholder="Nome do local" required>
+        <input type="text" id="endereco" placeholder="Endereço" required>
+        <textarea id="descricao" placeholder="Descrição (tipo de material aceito)"></textarea>
+        <button type="submit">Enviar sugestão</button>
+      </form>
+    </section>
+
+    <section id="educacao">
+      <h2>Educação Ambiental</h2>
+      <p>Aprenda como separar corretamente os resíduos e por que isso é importante. Recicle sempre que possível!</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 EcoPonto Digital. Todos os direitos reservados.</p>
+  </footer>
+    <script src="js/script.js"></script>
+</body>
+</html>

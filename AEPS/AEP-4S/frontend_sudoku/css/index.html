@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>🧩 Sudoku Infantil Temático - 4x4 e 6x6</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&display=swap');
+        body { font-family: 'Fredoka', Arial, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #f0e68c 0%, #ffc0cb 100%); color: #333; text-align: center; }
+        .container { max-width: 750px; margin: 20px auto; background: #ffffff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); border: 5px solid #ffaa00; }
+        h1 { color: #e63946; text-shadow: 2px 2px #f1faee; font-size: 2.5em; margin-bottom: 20px; }
+        h2 { color: #0077b6; margin-top: 30px; }
+        
+        /* Botões de Ação */
+        button { background-color: #457b9d; color: white; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; margin: 5px; font-size: 1.1em; transition: background-color 0.3s; }
+        button:hover { background-color: #1d3557; }
+        
+        /* Layout e Visibilidade */
+        .game-screen { display: none; }
+        .setup-screen { margin-bottom: 20px; }
+        
+        /* --- ESTILO DO TABULEIRO --- */
+        #tabuleiro { display: inline-grid; border: 3px solid #1d3557; background: #f1faee; margin-top: 20px; }
+        .cell {
+            display: flex; justify-content: center; align-items: center; font-size: 2em;
+            cursor: pointer; border: 1px solid #a8dadc; user-select: none; background-color: white;
+            transition: background-color 0.1s;
+        }
+        .cell.fixed { background-color: #a8dadc; cursor: default; }
+        .cell:hover:not(.fixed) { background-color: #e6f7ff; }
+
+        /* Estilos Padrão para 4x4 e 6x6 */
+        .size-4, .size-6 { margin: 0 auto; }
+        
+        /* 4x4 (Blocos 2x2) */
+        .size-4 { grid-template-columns: repeat(4, 80px); grid-template-rows: repeat(4, 80px); }
+        .size-4 .cell { box-sizing: border-box; }
+        .size-4 .cell:nth-child(4n + 3), .size-4 .cell:nth-child(4n + 4) { border-right-width: 3px; }
+        .size-4 .cell:nth-child(n) { border-right: 1px solid #a8dadc; }
+        .size-4 .cell:nth-child(4n) { border-right: none; }
+        
+        .size-4 .cell:nth-child(n+9):nth-child(-n+16) { border-top-width: 3px; }
+        .size-4 .cell:nth-child(n+9) { border-top: 3px solid #1d3557; }
+
+        /* 6x6 (Blocos 2x3) */
+        .size-6 { grid-template-columns: repeat(6, 60px); grid-template-rows: repeat(6, 60px); }
+        .size-6 .cell:nth-child(6n + 4), .size-6 .cell:nth-child(6n + 5), .size-6 .cell:nth-child(6n + 6) { border-right-width: 3px; }
+        .size-6 .cell:nth-child(6n) { border-right: none; }
+
+        .size-6 .cell:nth-child(n+19):nth-child(-n+36) { border-top-width: 3px; } /* Linha 4 */
+        .size-6 .cell:nth-child(n+13) { border-top: 3px solid #1d3557; } /* Bloco 3 e 4 */
+        .size-6 .cell:nth-child(n+25) { border-top: 3px solid #1d3557; } /* Bloco 5 e 6 */
+
+        /* Estilo da barra de seleção de temas */
+        #icon-selector { display: flex; justify-content: center; margin-top: 15px; }
+        .icon-option { font-size: 2.5em; cursor: pointer; padding: 5px 10px; border: 2px solid transparent; border-radius: 5px; margin: 0 5px; }
+        .icon-option.selected { border-color: #e63946; background-color: #f1faee; }
+
+        /* Estilo da área de status */
+        .message { margin-top: 15px; font-weight: bold; color: #1d3557; }
+        #api-output { margin-top: 25px; text-align: left; }
+        #output-json { background: #f0f8ff; border: 1px solid #cceeff; padding: 15px; border-radius: 10px; overflow-x: auto; white-space: pre-wrap; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧩 Sudoku Infantil Temático</h1>
+        
+        <div id="setup-screen" class="setup-screen">
+            <h2>Escolha a Dificuldade</h2>
+            <button onclick="startGame(4)">4x4 (Fácil/Médio)</button>
+            <button onclick="startGame(6)">6x6 (Médio/Difícil)</button>
+        </div>
+        
+        <div id="game-screen" class="game-screen">
+            <h2>Tema: <span id="current-theme"></span></h2>
+            
+            <div id="icon-selector"></div>
+
+            <div id="tabuleiro"></div>
+            
+            <div class="message" id="status-message">Selecione um ícone e clique nas células brancas para jogar.</div>
+            
+            <button onclick="salvarJogo()">💾 Salvar</button>
+            <button onclick="listarJogos()">📜 Jogos Salvos</button>
+            <button onclick="resetGame()">🔁 Novo Jogo</button>
+            
+            <div id="api-output">
+                <h3>Status da API (JSON):</h3>
+                <pre id="output-json">Aguardando operação...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'http://localhost:8080/api/sudoku';
+        const setupScreen = document.getElementById('setup-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const tabuleiroDiv = document.getElementById('tabuleiro');
+        const iconSelectorDiv = document.getElementById('icon-selector');
+        const outputJson = document.getElementById('output-json');
+        const statusMessage = document.getElementById('status-message');
+
+        let gridSize = 0;
+        let currentBoard = [];
+        let fixedCells = [];
+        let themeIcons = [];
+        let currentSelectedIcon = '';
+
+        // --- TEMAS (SUBSTITUEM NÚMEROS) ---
+        const THEMES = {
+            'Animais': ['🦁', '🐵', '🐶', '🦊', '🐻', '🐼'],
+            'Frutas': ['🍎', '🍌', '🍇', '🍉', '🍓', '🥝'],
+            'Formas': ['🔺', '⬜', '🟢', '⭐', '🔶', '⭕']
+        };
+
+        // --- FUNÇÕES DE INICIALIZAÇÃO E JOGO ---
+
+        function startGame(size) {
+            gridSize = size;
+            
+            const themeKeys = Object.keys(THEMES);
+            // Escolhe um tema aleatório para a demonstração
+            const themeName = themeKeys[Math.floor(Math.random() * themeKeys.length)];
+            themeIcons = THEMES[themeName].slice(0, size); // Pega o número de ícones necessário
+            
+            document.getElementById('current-theme').textContent = `${themeName} (${size}x${size})`;
+            
+            setupScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            
+            // Gera um tabuleiro inicial fixo para a demonstração
+            generateInitialBoard(size);
+            drawBoard();
+            drawIconSelector();
+            currentSelectedIcon = ''; // Limpa seleção inicial
+            outputJson.textContent = 'Aguardando operação...';
+        }
+
+        function resetGame() {
+            setupScreen.style.display = 'block';
+            gameScreen.style.display = 'none';
+            tabuleiroDiv.innerHTML = '';
+            statusMessage.textContent = 'Selecione um ícone e clique nas células brancas para jogar.';
+        }
+
+        function generateInitialBoard(size) {
+            currentBoard = [];
+            fixedCells = [];
+            let initial;
+
+            if (size === 4) {
+                // Exemplo 4x4 (2x2 blocks) - Fácil
+                initial = [1, 2, 0, 0, 3, 4, 0, 0, 0, 0, 1, 2, 0, 0, 3, 4];
+            } else if (size === 6) {
+                // Exemplo 6x6 (2x3 blocks) - Médio (Apenas alguns valores para preencher)
+                initial = [1, 2, 3, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 4, 5, 6, 2, 3, 0, 0, 0, 1, 5, 6, 0, 0, 0, 4];
+            }
+
+            currentBoard = initial.map(val => val === 0 ? '' : themeIcons[val - 1]);
+            fixedCells = initial.map(val => val !== 0);
+        }
+
+        function drawBoard() {
+            tabuleiroDiv.innerHTML = '';
+            tabuleiroDiv.className = `size-${gridSize}`;
+
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = currentBoard[i];
+                cell.dataset.index = i;
+                
+                // Aplica estilos de bloco para 4x4 e 6x6
+                const row = Math.floor(i / gridSize);
+                const col = i % gridSize;
+                
+                // 4x4: blocos 2x2
+                if (gridSize === 4) {
+                    if (col === 2) cell.style.borderLeft = '3px solid #1d3557';
+                    if (row === 2) cell.style.borderTop = '3px solid #1d3557';
+                }
+                
+                // 6x6: blocos 2x3
+                if (gridSize === 6) {
+                    if (col === 3 || col === 0) cell.style.borderLeft = '3px solid #1d3557'; // Colunas 3 e 0 (início)
+                    if (row === 2 || row === 4) cell.style.borderTop = '3px solid #1d3557'; // Linhas 3 e 5
+                }
+                
+                // Células fixas e jogáveis
+                if (fixedCells[i]) {
+                    cell.classList.add('fixed');
+                } else {
+                    cell.onclick = handleCellClick;
+                }
+                tabuleiroDiv.appendChild(cell);
+            }
+        }
+
+        function drawIconSelector() {
+            iconSelectorDiv.innerHTML = '';
+            themeIcons.forEach(icon => {
+                const option = document.createElement('span');
+                option.className = 'icon-option';
+                option.textContent = icon;
+                option.onclick = () => {
+                    currentSelectedIcon = icon;
+                    document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                };
+                iconSelectorDiv.appendChild(option);
+            });
+        }
+
+        function handleCellClick(event) {
+            if (!currentSelectedIcon) {
+                statusMessage.textContent = 'Por favor, selecione um ícone temático para jogar.';
+                return;
+            }
+            const index = parseInt(event.target.dataset.index);
+            
+            if (!fixedCells[index]) {
+                const cell = event.target;
+                
+                // Alterna entre o ícone selecionado e vazio
+                const newValue = (currentBoard[index] === currentSelectedIcon) ? '' : currentSelectedIcon;
+                currentBoard[index] = newValue;
+                cell.textContent = newValue;
+
+                statusMessage.textContent = 'Progresso atualizado! Clique em SALVAR para persistir.';
+            }
+        }
+
+        // --- FUNÇÕES DE CONEXÃO COM O BACKEND (JAVA/MYSQL) ---
+
+        function boardToString(board) {
+            return board.join(''); // Converte o array do tabuleiro para uma única string
+        }
+        
+        function salvarJogo() {
+            const tema = document.getElementById('current-theme').textContent;
+            const dificuldade = (gridSize === 6 ? 'Dificil' : 'Medio'); // Classificação simples
+            
+            const jogoData = {
+                dificuldade: dificuldade,
+                matriz: boardToString(currentBoard),
+                tamanho: gridSize,
+                tema: tema
+            };
+
+            outputJson.textContent = 'Enviando dados (POST)...';
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jogoData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(`Erro ${response.status}: ${text}`); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                outputJson.textContent = `✅ Jogo Salvo (ID: ${data.id})!\n${JSON.stringify(data, null, 2)}`;
+                statusMessage.textContent = 'Jogo persistido no MySQL. Pronto para a demonstração do vídeo!';
+            })
+            .catch(error => {
+                outputJson.textContent = `❌ Erro ao salvar. Verifique se a aplicação Java está rodando. Detalhe: ${error.message}`;
+                statusMessage.textContent = 'Erro de conexão com a API.';
+            });
+        }
+
+        function listarJogos() {
+            outputJson.textContent = 'Buscando dados (GET) de /api/sudoku...';
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    outputJson.textContent = JSON.stringify(data, null, 2);
+                    statusMessage.textContent = `Total de ${data.length} jogos encontrados no MySQL.`;
+                })
+                .catch(error => {
+                    outputJson.textContent = `❌ Erro ao listar: ${error.message}`;
+                    statusMessage.textContent = 'Erro de conexão com a API.';
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+Código Banco De Dados
+
+CREATE DATABASE test
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE test;
+
+CREATE TABLE IF NOT EXISTS sudoku
+(
+    id bigint AUTO_INCREMENT PRIMARY KEY,
+    dificuldade VARCHAR(255) NULL,
+    matriz VARCHAR(500) NULL,
+    tamanho INT NOT NULL,
+    tema VARCHAR(255) NULL
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+ALTER DATABASE test 
+CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+ALTER TABLE sudoku 
+CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE sudoku 
+MODIFY matriz VARCHAR(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
