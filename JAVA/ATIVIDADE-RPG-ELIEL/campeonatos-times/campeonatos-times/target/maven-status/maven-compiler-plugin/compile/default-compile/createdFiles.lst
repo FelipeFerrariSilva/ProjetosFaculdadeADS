@@ -1,0 +1,13 @@
+com/manus/campeonato/controller/ParticipacaoController.class
+com/manus/campeonato/repository/CampeonatoRepository.class
+com/manus/campeonato/service/CampeonatoService.class
+com/manus/campeonato/service/TimeService.class
+com/manus/campeonato/model/Campeonato.class
+com/manus/campeonato/model/Time.class
+com/manus/campeonato/controller/TimeController.class
+com/manus/campeonato/repository/ParticipacaoRepository.class
+com/manus/campeonato/repository/TimeRepository.class
+com/manus/campeonato/service/ParticipacaoService.class
+com/manus/campeonato/model/Participacao.class
+com/manus/campeonato/CampeonatosTimesApplication.class
+com/manus/campeonato/controller/CampeonatoController.class

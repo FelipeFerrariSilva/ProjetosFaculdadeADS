@@ -1,0 +1,13 @@
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/CampeonatosTimesApplication.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/controller/CampeonatoController.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/controller/ParticipacaoController.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/controller/TimeController.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/model/Campeonato.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/model/Participacao.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/model/Time.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/repository/CampeonatoRepository.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/repository/ParticipacaoRepository.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/repository/TimeRepository.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/service/CampeonatoService.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/service/ParticipacaoService.java
+/home/ubuntu/campeonatos-times/src/main/java/com/manus/campeonato/service/TimeService.java
